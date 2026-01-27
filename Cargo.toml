@@ -49,10 +49,10 @@ config     = "0.15.19"
 # Base dependencies/Commons
 # reqwest = { version = "*", features = ["cookies", "json", "multipart", "stream"] }
 # uuid = { version = "*", features = ["v4"] }
-serde = { version = "1.0.228", features = [ "derive" ] }
-# serde_json = "*"
-thiserror = "2.0.18"
-tokio     = { version = "1.49.0", features = [ "full", "tracing" ] }
+serde      = { version = "1.0.228", features = [ "derive" ] }
+serde_json = { version = "1.0.149", features = [ "preserve_order" ] }
+thiserror  = "2.0.18"
+tokio      = { version = "1.49.0", features = [ "full", "tracing" ] }
 
 # Logging and tracing
 tracing            = { version = "0.1.44", features = [ "max_level_trace" ] }
@@ -66,6 +66,8 @@ tokio-util         = "0.7.18"
 # tokio-util = { version = "*", features = ["codec"] }
 toml        = "0.9.8"
 async-trait = "0.1.89"
+csv         = "1.4.0"
+sqlx        = { version = "0.8.6", features = [ "sqlite", "migrate", "derive", "chrono", "runtime-tokio" ] }
 # dirs = "*" # Useful to get XDG spec dirs
 
 # Utilities
