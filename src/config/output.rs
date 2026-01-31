@@ -13,6 +13,7 @@ pub struct OutputConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SuccessOutputConfig {
+    pub enabled:   bool,
     pub file_path: PathBuf,
 }
 
@@ -27,7 +28,10 @@ impl Default for SuccessOutputConfig {
     fn default() -> Self {
         let file_path = Self::config_file_path()
             .expect("Failed to get config file path for SuccessOutputConfig");
-        Self { file_path }
+        Self {
+            enabled: false,
+            file_path,
+        }
     }
 }
 
@@ -35,6 +39,7 @@ impl Default for SuccessOutputConfig {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct FailureOutputConfig {
+    pub enabled:   bool,
     pub file_path: PathBuf,
 }
 
@@ -49,6 +54,9 @@ impl Default for FailureOutputConfig {
     fn default() -> Self {
         let file_path = Self::config_file_path()
             .expect("Failed to get config file path for SuccessOutputConfig");
-        Self { file_path }
+        Self {
+            enabled: false,
+            file_path,
+        }
     }
 }
