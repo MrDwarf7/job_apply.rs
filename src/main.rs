@@ -4,6 +4,7 @@ mod config;
 mod constants;
 mod error;
 mod macros;
+mod pre_fsm;
 mod prelude;
 mod providers;
 mod selectors;

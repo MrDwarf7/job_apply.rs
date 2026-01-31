@@ -65,7 +65,8 @@ pub trait ValidateDirectory {
 /// Then builds out the full file path and checks for its existence,
 pub trait ValidateFile: ValidateDirectory {
     fn validate_file<P: AsRef<Path>>(assumed_dir: P, assumed_filename: P) -> Result<PathBuf> {
-        let valid_dir = Self::validate_directory(&assumed_dir).expect("Failed to validate directory");
+        let valid_dir =
+            Self::validate_directory(&assumed_dir).expect("Failed to validate directory");
         if !valid_dir.join(assumed_filename.as_ref()).exists() {
             let mut file = std::fs::OpenOptions::new()
                 .create(true)
@@ -76,7 +77,10 @@ pub trait ValidateFile: ValidateDirectory {
             file.write_all(b"").expect("Failed to write to file");
 
             assert!(file.metadata().is_ok(), "Assertion failed: file.metadata().is_ok()");
-            assert!(file.metadata().unwrap().is_file(), "Assertion failed: file.metadata().unwrap().is_file()");
+            assert!(
+                file.metadata().unwrap().is_file(),
+                "Assertion failed: file.metadata().unwrap().is_file()"
+            );
             drop(file);
         }
         Ok(valid_dir.join(assumed_filename.as_ref()))

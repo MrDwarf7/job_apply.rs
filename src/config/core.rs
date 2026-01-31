@@ -3,7 +3,15 @@ use std::path::PathBuf;
 use config::Config;
 use serde::{Deserialize, Serialize};
 
-use crate::config::{DriverConfig, GeneralConfig, LoggingConfig, LoginConfig, OutputConfig, ProcessHandleExt};
+use crate::config::{
+    DriverConfig,
+    GeneralConfig,
+    LoggingConfig,
+    LoginConfig,
+    OutputConfig,
+    ProcessHandleExt,
+    SearchConfig,
+};
 use crate::impl_validation_traits;
 use crate::prelude::*;
 
@@ -18,6 +26,9 @@ pub struct AppConfig {
     pub output: OutputConfig,
 
     pub login: LoginConfig,
+
+    #[serde(default)]
+    pub search: SearchConfig,
 
     #[serde(skip)]
     pub config_path: PathBuf,
@@ -68,7 +79,10 @@ impl AppConfig {
         let config_path_own = Self::config_file_path().expect("Failed to get app config file path");
 
         let config_path = if !config_path.exists() || !config_path.is_file() {
-            warn!("You've provided an invalid config file path: {:?}. Using default configuration.", config_path);
+            warn!(
+                "You've provided an invalid config file path: {:?}. Using default configuration.",
+                config_path
+            );
             config_path_own
         } else {
             info!("Using provided config file path: {:?}", config_path);
@@ -76,7 +90,9 @@ impl AppConfig {
         };
 
         let c = Config::builder()
-            .add_source(config::File::with_name(config_path.to_str().expect("Invalid config file path")))
+            .add_source(config::File::with_name(
+                config_path.to_str().expect("Invalid config file path"),
+            ))
             .add_source(config::Environment::with_prefix("APP"))
             .build()
             .expect("Failed to build config");
@@ -93,6 +109,7 @@ impl AppConfig {
                 logging:     LoggingConfig::default(),
                 output:      OutputConfig::default(),
                 login:       LoginConfig::default(),
+                search:      SearchConfig::default(),
                 config_path: config_path_c.clone(),
             };
             std::fs::write(

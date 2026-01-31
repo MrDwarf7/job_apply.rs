@@ -1,3 +1,4 @@
+// use crate::portal::Portal;
 use crate::prelude::Result;
 use crate::states::Transition;
 
@@ -5,21 +6,29 @@ use crate::states::Transition;
 pub enum NavigateState {
     ToUrl { attempt: u8, url: String },
     ToElement(ValidElements),
-    // ToTab(ActionState), // etc...
+    // ToJobSearch { portal: Portal, keywords: String },
 }
 
 #[async_trait::async_trait]
 impl Transition for NavigateState {
     async fn execute(&self) -> Result<()> {
         match self {
-            NavigateState::ToUrl { attempt, url } => {
+            NavigateState::ToUrl { attempt: _, url: _ } => {
                 // Implement logic to navigate to the specified URL
                 Ok(())
             }
-            NavigateState::ToElement(element) => {
+            NavigateState::ToElement(_element) => {
                 // Implement logic to navigate to the specified element
                 Ok(())
-            }
+            } // NavigateState::ToJobSearch { portal: _, keywords: _ } => {
+              // Navigate to portal's search URL, enter keywords, submit, wait for listings
+              // 1. client.goto(portal.search_url())
+              // 2. wait for search input element (portal.selectors().search_input)
+              // 3. clear input, type keywords
+              // 4. submit search (press Enter)
+              // 5. wait for job listings element (portal.selectors().job_listing)
+              //     Ok(())
+              // }
         }
     }
 
@@ -43,6 +52,7 @@ pub enum LoginElements {
 
 #[derive(Debug)]
 pub enum JobElements {
+    SearchInput,
     Listings,
     Description(DescriptionElements),
 }

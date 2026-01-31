@@ -1,0 +1,65 @@
+use crate::providers::{Provider, SelectorKind};
+use crate::selectors::{
+    JobDescriptionSelectors,
+    JobListingSelectors,
+    LoginSelectors,
+    SEEK_JOB_DESCRIPTION_SELECTORS,
+    SEEK_JOB_LISTING_SELECTORS,
+    SEEK_LOGIN_SELECTORS,
+};
+
+#[derive(Debug, Clone)]
+pub struct SeekProvider;
+
+impl Provider for SeekProvider {
+    fn name(&self) -> &'static str {
+        "seek"
+    }
+
+    fn get_login_selectors(&self, kind: SelectorKind) -> LoginSelectors {
+        match kind {
+            SelectorKind::Xpath => SEEK_LOGIN_SELECTORS.xpath,
+            SelectorKind::Css => SEEK_LOGIN_SELECTORS.css,
+        }
+    }
+
+    fn get_job_listing_selectors(&self, kind: SelectorKind) -> JobListingSelectors {
+        match kind {
+            SelectorKind::Xpath => SEEK_JOB_LISTING_SELECTORS.xpath,
+            SelectorKind::Css => SEEK_JOB_LISTING_SELECTORS.css,
+        }
+    }
+
+    fn get_job_description_selectors(&self, kind: SelectorKind) -> JobDescriptionSelectors {
+        match kind {
+            SelectorKind::Xpath => SEEK_JOB_DESCRIPTION_SELECTORS.xpath,
+            SelectorKind::Css => SEEK_JOB_DESCRIPTION_SELECTORS.css,
+        }
+    }
+}
+
+impl From<&str> for SeekProvider {
+    fn from(s: &str) -> Self {
+        match s.to_lowercase().as_str() {
+            "seek" => SeekProvider,
+            _ => {
+                unimplemented!(
+                    "You've called SeekProvider::from with an unsupported provider name."
+                )
+            }
+        }
+    }
+}
+
+impl From<String> for SeekProvider {
+    fn from(s: String) -> Self {
+        match s.to_lowercase().as_str() {
+            "seek" => SeekProvider,
+            _ => {
+                unimplemented!(
+                    "You've called SeekProvider::from with an unsupported provider name."
+                )
+            }
+        }
+    }
+}

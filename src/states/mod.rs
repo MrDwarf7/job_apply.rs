@@ -3,17 +3,19 @@ mod error_state;
 mod navigate;
 mod paused;
 mod search;
+mod validate;
 
 use std::sync::Arc;
 
 use fantoccini::Locator;
 
 use crate::prelude::*;
-use crate::states::action::ActionState;
+pub use crate::states::action::ActionState;
 use crate::states::error_state::ErrorState;
 use crate::states::navigate::NavigateState;
 use crate::states::paused::PausedState;
-use crate::states::search::{FindBy, SearchState};
+use crate::states::search::{FindBy, JobListingSearch, SearchState};
+use crate::states::validate::{InvalidReason, JobValidation, ValidateState, ValidationResult};
 
 #[async_trait::async_trait]
 pub trait Transition {
@@ -23,7 +25,7 @@ pub trait Transition {
 }
 
 #[derive(Debug)]
-pub enum States {
+pub enum States<'a> {
     /// Searching for a specific T ( element, text, etc.)
     Search(SearchState),
     //
@@ -31,7 +33,10 @@ pub enum States {
     Navigate(NavigateState),
 
     /// Taking an action (click, input text, etc.)
-    Action(ActionState),
+    Action(ActionState<'a>),
+
+    /// Validating a job (Easy Apply available, not already applied, etc.)
+    Validate(ValidateState),
 
     /// The maximum number of iterations has been reached
     MaxIterationsReached,
@@ -48,7 +53,7 @@ pub enum States {
 // unsafe impl Sync for States {}
 
 #[async_trait::async_trait]
-impl Transition for States {
+impl Transition for States<'_> {
     async fn execute(&self) -> Result<()> {
         self.execute().await
     }
@@ -58,13 +63,14 @@ impl Transition for States {
     }
 }
 
-impl States {
+impl States<'_> {
     async fn execute(&self) -> Result<()> {
         let fut = Box::pin(async move {
             match self {
                 States::Search(state) => state.execute().await,
                 States::Navigate(state) => state.execute().await,
                 States::Action(state) => state.execute().await,
+                States::Validate(state) => state.execute().await,
                 States::MaxIterationsReached => {
                     todo!()
                 }
@@ -81,6 +87,7 @@ impl States {
             States::Search(state) => state.current_state(),
             States::Navigate(state) => state.current_state(),
             States::Action(state) => state.current_state(),
+            States::Validate(state) => state.current_state(),
             States::MaxIterationsReached => {
                 todo!()
             }
