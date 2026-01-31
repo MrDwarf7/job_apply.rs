@@ -24,7 +24,7 @@ pub trait Transition {
     async fn current_state(&self) -> &dyn Transition;
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum States<'a> {
     /// Searching for a specific T ( element, text, etc.)
     Search(SearchState),
@@ -46,11 +46,8 @@ pub enum States<'a> {
 
     /// Something has gone catastrophically wrong
     /// from which we cannot simply ask the user to resume
-    ErrorState(ErrorState),
+    Error, // This originall had (ErrorState) but it's not Clone so
 }
-
-// unsafe impl Send for States {}
-// unsafe impl Sync for States {}
 
 #[async_trait::async_trait]
 impl Transition for States<'_> {
@@ -75,7 +72,16 @@ impl States<'_> {
                     todo!()
                 }
                 States::Paused(state) => state.execute().await,
-                States::ErrorState(state) => state.execute().await,
+                States::Error => {
+                    todo!()
+                    // let error_state = ErrorState {
+                    //     message: "An unrecoverable error has occurred.".to_string(),
+                    //     action:  Box::new(|| {
+                    //         error!("Executing error handling action.");
+                    //     }),
+                    // };
+                    // error_state.execute().await
+                }
             }
         });
 
@@ -83,19 +89,23 @@ impl States<'_> {
     }
 
     async fn current_state(&self) -> &dyn Transition {
-        let s = match self {
-            States::Search(state) => state.current_state(),
-            States::Navigate(state) => state.current_state(),
-            States::Action(state) => state.current_state(),
-            States::Validate(state) => state.current_state(),
-            States::MaxIterationsReached => {
-                todo!()
-            }
-            States::Paused(state) => state.current_state(),
-            States::ErrorState(state) => state.current_state(),
-        };
-
-        return s.await;
+        Box::pin(async move {
+            (match self {
+                States::Search(state) => state.current_state(),
+                States::Navigate(state) => state.current_state(),
+                States::Action(state) => state.current_state(),
+                States::Validate(state) => state.current_state(),
+                States::MaxIterationsReached => {
+                    todo!()
+                }
+                States::Paused(state) => state.current_state(),
+                States::Error => {
+                    todo!()
+                }
+            })
+            .await
+        })
+        .await
     }
 }
 
@@ -108,15 +118,16 @@ pub async fn start_state_machine<S>(
 where
     S: AsRef<str> + Send + Sync + Clone + 'static,
 {
+    let starting_state = States::Navigate(NavigateState::ToUrl {
+        attempt: 0,
+        url:     starting_url.as_ref().to_string(),
+    });
+
     for idx in 0..max_iterations {
-        let starting_url = starting_url.clone();
+        let starting_state = starting_state.clone();
 
         let handle = tokio::spawn(async move {
-            let starting = States::Navigate(NavigateState::ToUrl {
-                attempt: 0,
-                url:     starting_url.as_ref().to_string(),
-            });
-            starting.execute().await
+            let _ = starting_state.execute().await;
         })
         .await;
 

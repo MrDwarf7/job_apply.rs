@@ -3,7 +3,7 @@ use fantoccini::elements::Element;
 use crate::prelude::Result;
 use crate::states::Transition;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ActionState<'a> {
     Click {
         element: Element,
@@ -11,6 +11,10 @@ pub enum ActionState<'a> {
     InputText {
         element: &'a Element,
         input:   String,
+    },
+    InputKey {
+        element: &'a Element,
+        key:     fantoccini::key::Key,
     },
 }
 
@@ -24,6 +28,10 @@ impl<'a> Transition for ActionState<'a> {
             }
             ActionState::InputText { element, input } => {
                 // Implement logic to input text into the element identified by locator
+                Ok(())
+            }
+            ActionState::InputKey { element, key } => {
+                // Implement logic to input keys into the element identified by locator
                 Ok(())
             }
         }
