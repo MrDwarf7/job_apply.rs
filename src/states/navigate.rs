@@ -2,7 +2,7 @@
 use crate::prelude::Result;
 use crate::states::Transition;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum NavigateState {
     ToUrl { attempt: u8, url: String },
     ToElement(ValidElements),
@@ -37,33 +37,33 @@ impl Transition for NavigateState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ValidElements {
     Login(LoginElements),
     Job(JobElements),
     Application(ApplicationElements),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum LoginElements {
     LoginUsername,
     LoginPassword,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum JobElements {
     SearchInput,
     Listings,
     Description(DescriptionElements),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum DescriptionElements {
     ApplyButton,
     Submit,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ApplicationElements {
     BulletPoint,
     TextField,

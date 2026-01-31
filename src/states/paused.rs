@@ -1,7 +1,7 @@
 use crate::prelude::*;
 use crate::states::Transition;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PausedState {
     pub reason:        String,
     pub duration_secs: u64,

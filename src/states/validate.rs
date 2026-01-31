@@ -2,12 +2,12 @@
 use crate::prelude::Result;
 use crate::states::Transition;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ValidateState {
     CheckJob(JobValidation),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct JobValidation {
     // pub portal: Portal,
 }

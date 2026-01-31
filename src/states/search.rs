@@ -4,7 +4,8 @@ use fantoccini::Locator;
 use crate::prelude::Result;
 use crate::states::Transition;
 
-#[derive(Debug)]
+#[allow(clippy::enum_variant_names)]
+#[derive(Debug, Clone)]
 pub enum SearchState {
     FindBy(FindBy),                    // Given a Locator, find the element
     FindAllBy(FindBy),                 // Find multiple elements by Locator
@@ -37,12 +38,12 @@ impl Transition for SearchState {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct FindBy {
     pub locator: Locator<'static>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct JobListingSearch {
     // pub portal:        Portal,
     pub current_index: usize,
