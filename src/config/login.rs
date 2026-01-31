@@ -32,7 +32,7 @@ impl Default for LoginConfig {
             Self::new(String::from("the_job_portal_provider"), username, password, login_url)
         } else {
             Self::new(
-                String::from("the_job_portal_provider"),
+                String::from("linkedin"),
                 String::from("your_username_here"),
                 String::from("your_password_here"),
                 String::from("put_login_url_here"),
