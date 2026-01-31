@@ -24,6 +24,8 @@ impl Transition for ErrorState {
 
 impl Debug for ErrorState {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("ErrorState").field("message", &self.message).finish()
+        f.debug_struct("ErrorState")
+            .field("message", &self.message)
+            .finish()
     }
 }

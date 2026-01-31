@@ -67,7 +67,10 @@ impl Deref for DriverProcessHandle {
 }
 
 impl DriverProcessHandle {
-    pub fn new(handle: tokio::task::JoinHandle<()>, stop_tx: tokio::sync::mpsc::Sender<()>) -> Self {
+    pub fn new(
+        handle: tokio::task::JoinHandle<()>,
+        stop_tx: tokio::sync::mpsc::Sender<()>,
+    ) -> Self {
         Self {
             handle:  Arc::new(handle),
             stop_tx: Arc::new(stop_tx),
@@ -114,7 +117,12 @@ pub async fn start_driver(driver: &mut DriverConfig) -> Result<Client> {
         return ClientBuilder::native()
             .connect(&format!("http://localhost:{}", port))
             .await
-            .map_err(|e| Error::Generic(format!("Failed to connect to existing driver at port {}: {}", port, e)));
+            .map_err(|e| {
+                Error::Generic(format!(
+                    "Failed to connect to existing driver at port {}: {}",
+                    port, e
+                ))
+            });
     }
 
     let port = driver.driver_port.unwrap_or(4444);
@@ -145,7 +153,9 @@ pub async fn start_driver(driver: &mut DriverConfig) -> Result<Client> {
     let client = ClientBuilder::native()
         .connect(&format!("http://localhost:{}", port))
         .await
-        .map_err(|e| Error::Generic(format!("Failed to connect to driver at port {}: {}", port, e)))?;
+        .map_err(|e| {
+            Error::Generic(format!("Failed to connect to driver at port {}: {}", port, e))
+        })?;
 
     Ok(client)
 }
@@ -158,7 +168,10 @@ async fn spawn_driver(
     check_interval_secs: u64,
 ) -> Result<JoinHandle<()>> {
     Ok(tokio::spawn(async move {
-        let mut child = cmd.kill_on_drop(true).spawn().expect("Failed to spawn driver process");
+        let mut child = cmd
+            .kill_on_drop(true)
+            .spawn()
+            .expect("Failed to spawn driver process");
 
         let stop_rx = stop_rx.recv().fuse();
         tokio::pin!(stop_rx);

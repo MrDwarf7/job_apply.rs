@@ -25,7 +25,8 @@ impl WithPath for SuccessOutputConfig {
 
 impl Default for SuccessOutputConfig {
     fn default() -> Self {
-        let file_path = Self::config_file_path().expect("Failed to get config file path for SuccessOutputConfig");
+        let file_path = Self::config_file_path()
+            .expect("Failed to get config file path for SuccessOutputConfig");
         Self { file_path }
     }
 }
@@ -46,7 +47,8 @@ impl WithPath for FailureOutputConfig {
 
 impl Default for FailureOutputConfig {
     fn default() -> Self {
-        let file_path = Self::config_file_path().expect("Failed to get config file path for SuccessOutputConfig");
+        let file_path = Self::config_file_path()
+            .expect("Failed to get config file path for SuccessOutputConfig");
         Self { file_path }
     }
 }

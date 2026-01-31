@@ -6,7 +6,17 @@ use which::which;
 use crate::prelude::{Error, Result};
 
 #[derive(
-    Debug, Eq, PartialEq, Ord, PartialOrd, Clone, Copy, Serialize, Deserialize, strum::Display, strum::EnumString,
+    Debug,
+    Eq,
+    PartialEq,
+    Ord,
+    PartialOrd,
+    Clone,
+    Copy,
+    Serialize,
+    Deserialize,
+    strum::Display,
+    strum::EnumString,
 )]
 pub enum DriverType {
     #[serde(rename = "chrome")]
