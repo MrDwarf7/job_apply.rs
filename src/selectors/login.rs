@@ -4,7 +4,6 @@ pub use seek::SEEK_LOGIN_SELECTORS;
 
 use crate::Error;
 use crate::prelude::Result;
-use crate::providers::ByXpath;
 
 #[derive(Debug, Clone)]
 pub struct LoginSelectors {
@@ -30,7 +29,13 @@ mod linkedin {
     use crate::selectors::{LoginSelectorAgg, LoginSelectors};
 
     const LINKEDIN_LOGIN_XPATH_SELECTORS: LoginSelectors = LoginSelectors {
-        failed_attempt_indicator: "//div[@id='error-for-username']",
+        // always present
+        // id="error-for-password"
+        // GOOD STATE
+        // class="form__label--error  hidden__imp"
+        // BAD STATE
+        // class="form__label--error"
+        failed_attempt_indicator: "//div[@id='error-for-password' and contains(@class, 'form__label--error') and not(contains(@class, 'hidden__imp'))]",
         username_field:           "//input[@id='username']",
         password_field:           "//input[@id='password']",
         submit_button:            "//button[@type='submit']",
