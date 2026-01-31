@@ -1,10 +1,11 @@
-use crate::providers::{Provider, SelectorKind};
+use crate::providers::{Provider, ProviderKind, SelectorKind};
 use crate::selectors::{
     JobDescriptionSelectors,
     JobListingSelectors,
     LoginSelectors,
     SEEK_JOB_DESCRIPTION_SELECTORS,
     SEEK_JOB_LISTING_SELECTORS,
+    SEEK_JOB_SEARCH_SELECTORS,
     SEEK_LOGIN_SELECTORS,
 };
 
@@ -12,14 +13,21 @@ use crate::selectors::{
 pub struct SeekProvider;
 
 impl Provider for SeekProvider {
-    fn name(&self) -> &'static str {
-        "seek"
+    fn name(&self) -> ProviderKind {
+        ProviderKind::Seek
     }
 
     fn get_login_selectors(&self, kind: SelectorKind) -> LoginSelectors {
         match kind {
             SelectorKind::Xpath => SEEK_LOGIN_SELECTORS.xpath,
             SelectorKind::Css => SEEK_LOGIN_SELECTORS.css,
+        }
+    }
+
+    fn get_job_search_selectors(&self, kind: SelectorKind) -> crate::selectors::JobSearchSelectors {
+        match kind {
+            SelectorKind::Xpath => SEEK_JOB_SEARCH_SELECTORS.xpath,
+            SelectorKind::Css => SEEK_JOB_SEARCH_SELECTORS.css,
         }
     }
 

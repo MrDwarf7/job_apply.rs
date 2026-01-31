@@ -1,7 +1,13 @@
+use std::fmt::{Debug, Display};
 use std::sync::Arc;
 
 use crate::prelude::Result;
-use crate::selectors::{JobDescriptionSelectors, JobListingSelectors, LoginSelectors};
+use crate::selectors::{
+    JobDescriptionSelectors,
+    JobListingSelectors,
+    JobSearchSelectors,
+    LoginSelectors,
+};
 use crate::states::ActionState;
 
 mod linkedin;
@@ -12,19 +18,19 @@ use fantoccini::elements::Element;
 pub use linkedin::LinkedInProvider;
 pub use seek::SeekProvider;
 
-#[async_trait::async_trait]
-pub trait ByXpath {
-    async fn by_xpath(client: &Client, selector: &str) -> Result<fantoccini::elements::Element>;
-}
-
-#[async_trait::async_trait]
-pub trait ByCss {
-    async fn by_css(client: &Client, selector: &str) -> Result<fantoccini::elements::Element>;
-}
+// #[async_trait::async_trait]
+// pub trait ByXpath {
+//     async fn by_xpath(client: &Client, selector: &str) -> Result<fantoccini::elements::Element>;
+// }
+//
+// #[async_trait::async_trait]
+// pub trait ByCss {
+//     async fn by_css(client: &Client, selector: &str) -> Result<fantoccini::elements::Element>;
+// }
 
 #[async_trait::async_trait]
 pub trait Provider: Send + Sync {
-    fn name(&self) -> &'static str;
+    fn name(&self) -> ProviderKind;
 
     /// Allows for attempting different selector strategies in a preferred order.
     fn preferred_selector_order(&self) -> Vec<SelectorKind> {
@@ -58,6 +64,24 @@ pub trait Provider: Send + Sync {
         })
     }
 
+    async fn with_elements(
+        &self,
+        client: &Client,
+        kind: SelectorKind,
+        selector: &str,
+    ) -> Result<Vec<Element>> {
+        let locator = match kind {
+            SelectorKind::Css => fantoccini::Locator::Css(selector),
+            SelectorKind::Xpath => fantoccini::Locator::XPath(selector),
+        };
+        client.find_all(locator).await.map_err(|e| {
+            crate::prelude::Error::Generic(format!(
+                "Elements not found for selector '{}': {}",
+                selector, e
+            ))
+        })
+    }
+
     async fn with_action<'a>(&self, action: ActionState<'a>) -> Result<()> {
         match action {
             ActionState::Click { element } => {
@@ -73,12 +97,19 @@ pub trait Provider: Send + Sync {
                     ))
                 })
             }
+            ActionState::InputKey { element, key } => {
+                element.send_keys(&key).await.map_err(|e| {
+                    crate::prelude::Error::Generic(format!("Failed to send key '{:?}': {}", key, e))
+                })
+            }
         }
     }
 
     // // We have a function for each 'set' of selectors (Each stage)
 
     fn get_login_selectors(&self, kind: SelectorKind) -> LoginSelectors;
+
+    fn get_job_search_selectors(&self, kind: SelectorKind) -> JobSearchSelectors;
 
     fn get_job_listing_selectors(&self, kind: SelectorKind) -> JobListingSelectors;
 
@@ -95,10 +126,22 @@ pub enum SelectorKind {
     Xpath,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ProviderKind {
     LinkedIn,
     Seek,
     // ... others
+}
+
+impl Display for ProviderKind {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let s = match self {
+            ProviderKind::LinkedIn => "LinkedIn",
+            ProviderKind::Seek => "Seek",
+            // ... others
+        };
+        write!(f, "{}", s)
+    }
 }
 
 impl From<&str> for ProviderKind {
