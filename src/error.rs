@@ -27,4 +27,29 @@ pub enum Error {
 
     #[error("No keywords set, but 'use_keywords' is true: {0}")]
     NoKeywordsSet(String),
+
+    #[error("Database error: {0}")]
+    DatabaseError(#[from] DatabaseError),
+
+    // fantoccini::error::CmdError
+    // FantocciniCmdError(#[from] fantoccini::error::CmdError),
+    #[error("Fantoccini command error: {error}")]
+    FantocciniCmdError {
+        error: Box<fantoccini::error::CmdError>,
+    },
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum DatabaseError {
+    #[error("Create error: {0}")]
+    Create(String),
+
+    #[error("Read error: {0}")]
+    Read(String),
+
+    #[error("Update error: {0}")]
+    Update(String),
+
+    #[error("Delete error: {0}")]
+    Delete(String),
 }
