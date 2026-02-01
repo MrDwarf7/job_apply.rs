@@ -24,4 +24,7 @@ pub enum Error {
 
     #[error("Login failure: {0}")]
     LoginFailure(String),
+
+    #[error("No keywords set, but 'use_keywords' is true: {0}")]
+    NoKeywordsSet(String),
 }
