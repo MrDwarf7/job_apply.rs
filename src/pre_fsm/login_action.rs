@@ -28,14 +28,15 @@ pub async fn login(
 
     info!("Navigating to login page: {}", login_url);
     client.goto(&login_url).await.map_err(|e| {
-        Error::Generic(format!("Failed to navigate to login URL '{}': {}", login_url, e))
+        Error::FantocciniCmdError { error: Box::new(e) }
+        // Error::Generic(format!("Failed to navigate to login URL '{}': {}", login_url, e))
     })?;
 
     wait_millis(500).await;
 
     username(ActionPacket {
         client,
-        provider: provider.clone(),
+        provider: Arc::clone(&provider),
         config_section: login_config,
         selector_kind,
         selectors: selectors.clone(),

@@ -3,6 +3,7 @@
 use std::io::Write as _;
 use std::path::{Path, PathBuf};
 
+use tokio::io::AsyncWriteExt as _;
 #[allow(unused_imports)]
 pub use tracing::{debug, error, info, trace, warn};
 
@@ -41,15 +42,19 @@ pub fn current_path() -> Result<std::path::PathBuf> {
         .map_err(Error::Generic)
 }
 
+#[async_trait::async_trait]
 pub trait ValidateDirectory {
     /// Takes in a base directory path,
     /// performs a check to ensure it exists, creating it it doesn't,
     ///
     /// # Returns
     /// * Returns a new PathBuf representing the validated directory path.
-    fn validate_directory<P: AsRef<Path>>(assumed_dir: P) -> Result<PathBuf> {
+    async fn validate_directory<P: AsRef<Path> + Send + Sync>(assumed_dir: P) -> Result<PathBuf> {
         if !assumed_dir.as_ref().exists() {
-            std::fs::create_dir_all(&assumed_dir).expect("Failed to create directory");
+            tokio::fs::create_dir_all(&assumed_dir)
+                .await
+                .expect("Failed to create directory");
+            // std::fs::create_dir_all(&assumed_dir).expect("Failed to create directory");
             assert!(assumed_dir.as_ref().exists(), "Assertion failed: base_dir.as_ref().exists()");
             Ok(assumed_dir.as_ref().to_path_buf())
         } else {
@@ -63,22 +68,29 @@ pub trait ValidateDirectory {
 /// Validates the existence of a file within a specified directory,
 /// Requires access to the `ValidateDirectory` trait to ensure the directory is valid first.
 /// Then builds out the full file path and checks for its existence,
-pub trait ValidateFile: ValidateDirectory {
-    fn validate_file<P: AsRef<Path>>(assumed_dir: P, assumed_filename: P) -> Result<PathBuf> {
-        let valid_dir =
-            Self::validate_directory(&assumed_dir).expect("Failed to validate directory");
+#[async_trait::async_trait]
+pub trait ValidateFile: ValidateDirectory + Send + Sync {
+    async fn validate_file<P: AsRef<Path> + Send + Sync>(
+        assumed_dir: P,
+        assumed_filename: P,
+    ) -> Result<PathBuf> {
+        let valid_dir = Self::validate_directory(&assumed_dir)
+            .await
+            .expect("Failed to validate directory");
         if !valid_dir.join(assumed_filename.as_ref()).exists() {
-            let mut file = std::fs::OpenOptions::new()
+            let mut file = tokio::fs::OpenOptions::new()
+                // std::fs::OpenOptions::new()
                 .create(true)
                 .truncate(false)
                 .write(true)
                 .open(valid_dir.join(assumed_filename.as_ref()))
+                .await
                 .expect("Failed to create file");
-            file.write_all(b"").expect("Failed to write to file");
+            file.write_all(b"").await.expect("Failed to write to file");
 
-            assert!(file.metadata().is_ok(), "Assertion failed: file.metadata().is_ok()");
+            assert!(file.metadata().await.is_ok(), "Assertion failed: file.metadata().is_ok()");
             assert!(
-                file.metadata().unwrap().is_file(),
+                file.metadata().await.unwrap().is_file(),
                 "Assertion failed: file.metadata().unwrap().is_file()"
             );
             drop(file);
@@ -88,9 +100,13 @@ pub trait ValidateFile: ValidateDirectory {
 }
 
 /// Trait to consolidate both directory and file validation.
-pub trait Validate: ValidateFile {
-    fn validate<P: AsRef<Path>>(assumed_dir: P, assumed_filename: P) -> Result<std::path::PathBuf> {
-        Self::validate_file(assumed_dir, assumed_filename)
+#[async_trait::async_trait]
+pub trait Validate: ValidateFile + Send + Sync {
+    async fn validate<P: AsRef<Path> + Send + Sync>(
+        assumed_dir: P,
+        assumed_filename: P,
+    ) -> Result<std::path::PathBuf> {
+        Self::validate_file(assumed_dir, assumed_filename).await
     }
 }
 
@@ -98,23 +114,24 @@ pub trait Validate: ValidateFile {
 /// and appending additional path segments to it.
 ///
 /// See the docs on `Self::from_current` for more details.
-pub trait WithPath: Validate {
+#[async_trait::async_trait]
+pub trait WithConfigPath: Validate {
     const DIRECTORY: &'static str;
     const FILE: &'static str;
 
-    fn config_file_path() -> Result<PathBuf> {
+    async fn with_config_path() -> Result<PathBuf> {
         let current = current_path().expect("Failed to get current path");
         // We make assumptions here because the validation logic handles
         // cases where the directory or file do not exist.
         let assumed_dir = current.join(Self::DIRECTORY);
         let assumed_file = assumed_dir.join(Self::FILE);
 
-        let validated = Self::validate(assumed_dir, assumed_file);
+        Self::validate(assumed_dir, assumed_file).await
 
-        match validated {
-            Ok(path) => Ok(path),
-            Err(e) => Err(e),
-        }
+        // match validated {
+        //     Ok(path) => Ok(path),
+        //     Err(e) => Err(e),
+        // }
     }
 }
 
