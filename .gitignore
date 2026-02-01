@@ -56,3 +56,5 @@ output/*
 
 .old_files
 .old_files/*
+database/
+.sqlx/

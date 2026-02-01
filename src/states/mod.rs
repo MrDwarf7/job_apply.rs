@@ -123,6 +123,8 @@ where
         url:     starting_url.as_ref().to_string(),
     });
 
+    starting_state.execute().await?;
+
     for idx in 0..max_iterations {
         let starting_state = starting_state.clone();
 

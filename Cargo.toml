@@ -68,6 +68,10 @@ toml        = "0.9.8"
 async-trait = "0.1.89"
 csv         = "1.4.0"
 sqlx        = { version = "0.8.6", features = [ "sqlite", "migrate", "derive", "chrono", "runtime-tokio" ] }
+
+#
+# Alternative SQLite options
+# rusqlite = { version = "*", features = ["bundled"] }
 # dirs = "*" # Useful to get XDG spec dirs
 
 # Utilities
